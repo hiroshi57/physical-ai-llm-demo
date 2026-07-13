@@ -77,10 +77,36 @@ class Planner:
             if path is None:
                 raise PlanningError("ゴールへの経路が見つかりません")
             plan += _path_to_moves(path)
-            plan.append(Action("place"))
+            for m in _path_to_moves(path):
+                sim.apply(m)
+            # 物体を保持している時だけ置く(移動のみの指示では place しない)
+            if target_obj is not None:
+                plan.append(Action("place"))
 
         if not plan:
             raise PlanningError(f"指示を解釈できません: {instruction}")
+        return plan
+
+    def plan_deliver_all(self, env: GridWorld, object_names: List[str]) -> List[Action]:
+        """複数物体を順にゴールへ搬送するプランを生成(全機能: 複数搬送)."""
+        sim = env.copy()
+        blocked = self._blocked(env)
+        plan: List[Action] = []
+        for name in object_names:
+            if name not in sim.objects:
+                raise PlanningError(f"物体 '{name}' が存在しません")
+            to_obj = _bfs_path(sim, sim.robot, sim.objects[name], blocked)
+            if to_obj is None:
+                raise PlanningError(f"'{name}' への経路がありません")
+            for m in _path_to_moves(to_obj):
+                plan.append(m); sim.apply(m)
+            plan.append(Action("pick")); sim.apply(Action("pick"))
+            to_goal = _bfs_path(sim, sim.robot, sim.goal, blocked)
+            if to_goal is None:
+                raise PlanningError(f"'{name}' 搬送のゴール経路がありません")
+            for m in _path_to_moves(to_goal):
+                plan.append(m); sim.apply(m)
+            plan.append(Action("place")); sim.apply(Action("place"))
         return plan
 
     def _resolve_object(self, env: GridWorld, instruction: str) -> Optional[str]:

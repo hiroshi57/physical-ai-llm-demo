@@ -62,6 +62,24 @@ def main():
     except UnsafePlanError as e:
         print(f"  拒否: {[v.kind for v in e.report.violations]}")
 
+    # 全機能: クローズドループ自動リプランニング
+    from planner import SafePlanner
+    print("\n=== クローズドループ自動リプランニング ===")
+    env3 = GridWorld(width=5, height=3, robot=(0, 0), goal=(4, 0),
+                     obstacles={(2, 1)}, hazards={(2, 0)}, objects={})
+    res = SafePlanner().plan_safe(env3, "ゴールに移動")
+    print(f"  1回目は危険(2,0)を通過 -> 検出して回避再計画: "
+          f"safe={res.safe} replanned={res.replanned} attempts={res.attempts}")
+
+    # 全機能: 複数物体の連続搬送
+    from planner import Planner
+    print("\n=== 複数物体の連続搬送 ===")
+    env4 = GridWorld(width=6, height=6, robot=(0, 0), goal=(5, 5),
+                     obstacles={(2, 1)}, hazards={(3, 3)}, objects={"箱A": (1, 1), "箱B": (4, 1)})
+    plan4 = Planner().plan_deliver_all(env4, ["箱A", "箱B"])
+    ActionExecutor().execute(env4, plan4)
+    print(f"  納品済み: {env4.delivered}")
+
 
 if __name__ == "__main__":
     main()
