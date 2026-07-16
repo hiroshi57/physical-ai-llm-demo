@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>フィジカルAI×LLM(スタンドアロン)</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#f7f8fa;margin:0;padding:24px;color:#1a1a2e}
+    .wrap{max-width:720px;margin:0 auto} h1{color:#2f855a;font-size:22px}
+    .card{background:#fff;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    pre.grid{background:#f0f4f0;padding:12px;border-radius:8px;font-size:18px;line-height:1.4}
+    .safe{color:#2f855a;font-weight:bold} .unsafe{color:#c0392b;font-weight:bold}
+    input{padding:6px;border:1px solid #ccd;border-radius:6px}
+    button.primary{background:#2f855a;color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer;margin-top:8px}
+    nav button{margin-right:8px}
+  </style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel" data-presets="react">
+  const R={safe:true,replanned:false,attempts:1,delivered:["箱"],
+    plan:["D","D","D","D","D","R","R","R","R","R","U","U","U","U","PI","D","D","R","D","D","PL"],
+    grid:"R . # . . .\n. . # . o .\n. . # . . .\n. . . ! . .\n. . . . ! .\n. . . . . G"};
+  function App(){
+    const [tab,setTab]=React.useState("plan");
+    return (<div className="wrap"><h1>フィジカルAI × LLM デモ <small style={{fontSize:12,color:"#889"}}>(デモ)</small></h1>
+      <nav><button onClick={()=>setTab("plan")} disabled={tab==="plan"}>プラン可視化</button>
+        <button onClick={()=>setTab("hist")} disabled={tab==="hist"}>実行履歴</button></nav>
+      {tab==="plan"?(<div className="card"><h2>計画 → 安全性検証 → 実行</h2>
+        <input style={{width:"100%"}} defaultValue="箱をゴールに運んで"/>
+        <button className="primary">実行</button>
+        <div className="result"><p>安全性: <span className="safe">SAFE ✓</span> / 試行{R.attempts}回</p>
+          <pre className="grid">{R.grid}</pre>
+          <p>プラン（{R.plan.length}手）: <code>{R.plan.join(" ")}</code></p>
+          <p>納品済み: {R.delivered.join("、")}</p></div>
+      </div>):(<div className="card"><h2>実行履歴</h2>
+        <table><tr><th>ID</th><th>指示</th><th>安全性</th><th>納品</th></tr>
+          <tr><td>1</td><td>箱をゴールに運んで</td><td className="safe">SAFE</td><td>箱</td></tr></table>
+      </div>)}</div>);
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script></body></html>

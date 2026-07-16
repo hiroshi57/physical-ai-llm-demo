@@ -1,4 +1,6 @@
-# コアは標準ライブラリのみで動作。以下はテスト用。
+# コアは標準ライブラリのみで動作。API層は FastAPI。
 pytest>=8.0
-# 実LLM接続する場合のみ:
-# anthropic>=0.30
+fastapi>=0.110
+uvicorn>=0.29
+httpx>=0.27
+# 実LLM接続する場合のみ: anthropic>=0.30
